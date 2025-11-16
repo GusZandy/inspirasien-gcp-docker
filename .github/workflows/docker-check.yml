@@ -1,0 +1,30 @@
+name: Docker Compose CI check
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+jobs:
+  docker-compose-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate docker-compose.yml
+        run: docker compose -f docker-compose.yml config --quiet
+
+      - name: Pull images
+        run: docker compose -f docker-compose.yml pull
+
+      - name: Start services (smoke test)
+        run: |
+          docker compose -f docker-compose.yml up -d
+          docker compose -f docker-compose.yml ps
+
+      - name: Redis healthcheck
+        run: docker exec central-redis redis-cli ping | grep -q PONG
+
+      - name: Tear down
+        if: always()
+        run: docker compose -f docker-compose.yml down --volumes --remove-orphans
