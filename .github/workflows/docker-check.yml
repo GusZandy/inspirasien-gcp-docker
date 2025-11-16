@@ -17,6 +17,11 @@ jobs:
       - name: Pull images
         run: docker compose -f docker-compose.yml pull
 
+      - name: Ensure external network exists
+        run: |
+          docker network inspect docker_laravel_network >/dev/null 2>&1 || \
+          docker network create docker_laravel_network
+
       - name: Start services (smoke test)
         run: |
           docker compose -f docker-compose.yml up -d
@@ -25,6 +30,8 @@ jobs:
       - name: Redis healthcheck
         run: docker exec central-redis redis-cli ping | grep -q PONG
 
-      - name: Tear down
+      - name: Tear down and remove network
         if: always()
-        run: docker compose -f docker-compose.yml down --volumes --remove-orphans
+        run: |
+          docker compose -f docker-compose.yml down --volumes --remove-orphans
+          docker network rm docker_laravel_network >/dev/null 2>&1 || true
