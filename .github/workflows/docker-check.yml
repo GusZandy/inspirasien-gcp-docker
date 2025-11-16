@@ -28,7 +28,7 @@ jobs:
           docker compose -f docker-compose.yml ps
 
       - name: Redis healthcheck
-        run: docker exec central-redis redis-cli ping | grep -q PONG
+        run: docker exec redis redis-cli ping | grep -q PONG
 
       - name: Tear down and remove network
         if: always()
