@@ -1,0 +1,11 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: central-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    networks:
+      - docker_laravel_network
+
+networks:
+  docker_laravel_network:
+    external: true
